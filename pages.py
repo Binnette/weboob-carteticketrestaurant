@@ -17,14 +17,18 @@
 # You should have received a copy of the GNU Affero General Public License
 # along with weboob. If not, see <http://www.gnu.org/licenses/>.
 
+from weboob.tools.log import getLogger
 from decimal import Decimal
 from weboob.browser.pages import HTMLPage
 from weboob.capabilities.bank import Account
 
 class Login(HTMLPage):
     def get_error(self):
-        #TODO
-        return "BinnetteException"
+        notification = self.doc.xpath('//div[@class="notification-summary"]/ul/li[@class="notification-summary-message-error"]')
+        errors = ""
+        for err in notification:
+            errors += err.text
+        return errors
 
 class Home(HTMLPage):
     def get_accounts(self):

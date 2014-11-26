@@ -17,7 +17,10 @@
 # You should have received a copy of the GNU Affero General Public License
 # along with weboob. If not, see <http://www.gnu.org/licenses/>.
 
+from weboob.tools.log import getLogger
+from weboob.tools.log import getLogger
 from weboob.browser import LoginBrowser, need_login, URL
+from weboob.exceptions import BrowserIncorrectPassword
 from .pages import Login, Home, Transaction
 
 __all__ = ['CarteTicketRestaurantBrowser']
@@ -34,11 +37,11 @@ class CarteTicketRestaurantBrowser(LoginBrowser):
             parameters['Email'] = self.username
             parameters['password'] = self.password
             response = self.login.open(data=parameters)
-            
-            #TODO: login.is_here() ne marche pas ! le problème vient peu-être de self.login.open ?
-            if self.login.is_here():
-                raise BrowserIncorrectPassword(self.page.get_error())
-                
+            errors = response.get_error()
+
+            if len(errors) > 0:
+                raise BrowserIncorrectPassword(errors)
+
             return response
   
     @need_login
