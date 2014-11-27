@@ -17,8 +17,7 @@
 # You should have received a copy of the GNU Affero General Public License
 # along with weboob. If not, see <http://www.gnu.org/licenses/>.
 
-from weboob.tools.log import getLogger
-from decimal import Decimal
+from weboob.browser.filters.standard import CleanText, CleanDecimal
 from weboob.browser.pages import HTMLPage
 from weboob.capabilities.bank import Account
 
@@ -30,27 +29,14 @@ class Login(HTMLPage):
             errors += err.text
         return errors
 
-class Home(HTMLPage):
+class Home(HTMLPage):           
     def get_accounts(self):
-        id = None
-        balance = None
-        carte = self.doc.xpath('//div[@class="carte"]/p/a[@class="basic-href"]')
-        solde = self.doc.xpath('//div[@class="solde"]/p/a/strong')
-
-        if len(carte) == 1:
-            id = carte.pop().text
-
-        if len(solde) == 1:
-            balance = solde.pop().text
-            balance = balance.replace(",", ".")
-            balance = balance.replace(unichr(8364), "") #unichr(8364) => €
-
-        if id is not None and balance is not None:
-            account = Account()
-            account.id = id
-            account.label = unicode("Carte Ticket Restaurant")
-            account.balance = Decimal(balance)  
-            yield account;
+        euro = 8364 # symbol €
+        account = Account()
+        account.id = CleanText('//div[@class="carte"]/p/a[@class="basic-href"]')(self.doc)
+        account.balance = CleanDecimal(CleanText('//div[@class="solde"]/p/a/strong', symbols=unichr(euro)), replace_dots=True)(self.doc) 
+        account.label = CleanText('//div[@class="bl bl-produit"]/nav/ul/li/a/strong', children=False)(self.doc)
+        yield account
 
 class Transaction(HTMLPage):
     pass
