@@ -23,18 +23,14 @@ from weboob.capabilities.bank import Account
 
 class Login(HTMLPage):
     def get_error(self):
-        notification = self.doc.xpath('//div[@class="notification-summary"]/ul/li[@class="notification-summary-message-error"]')
-        errors = ""
-        for err in notification:
-            errors += err.text
-        return errors
+        return CleanText('//div[@class="notification-summary"]/ul/li[@class="notification-summary-message-error"]')(self.doc)
 
-class Home(HTMLPage):           
+class Home(HTMLPage):
     def get_accounts(self):
         euro = 8364 # symbol €
         account = Account()
         account.id = CleanText('//div[@class="carte"]/p/a[@class="basic-href"]')(self.doc)
-        account.balance = CleanDecimal(CleanText('//div[@class="solde"]/p/a/strong', symbols=unichr(euro)), replace_dots=True)(self.doc) 
+        account.balance = CleanDecimal(CleanText('//div[@class="solde"]/p/a/strong', symbols=unichr(euro)), replace_dots=True)(self.doc)
         account.label = CleanText('//div[@class="bl bl-produit"]/nav/ul/li/a/strong', children=False)(self.doc)
         yield account
 
