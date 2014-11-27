@@ -22,7 +22,7 @@ from weboob.browser.pages import HTMLPage
 from weboob.capabilities.bank import Account
 
 class Login(HTMLPage):
-    def get_error(self):
+    def get_errors(self):
         return CleanText('//div[@class="notification-summary"]/ul/li[@class="notification-summary-message-error"]')(self.doc)
 
 class Home(HTMLPage):

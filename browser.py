@@ -18,7 +18,6 @@
 # along with weboob. If not, see <http://www.gnu.org/licenses/>.
 
 from weboob.tools.log import getLogger
-from weboob.tools.log import getLogger
 from weboob.browser import LoginBrowser, need_login, URL
 from weboob.exceptions import BrowserIncorrectPassword
 from .pages import Login, Home, Transaction
@@ -32,17 +31,13 @@ class CarteTicketRestaurantBrowser(LoginBrowser):
     transaction = URL('/Card/Transaction', Transaction)
 
     def do_login(self):
-        if self.username and self.password:
-            parameters = {}
-            parameters['Email'] = self.username
-            parameters['password'] = self.password
-            response = self.login.open(data=parameters)
-            errors = response.get_error()
+        response = self.login.open(data={'email': self.username, 'password': self.password})
+        errors = response.get_errors()
 
-            if len(errors) > 0:
-                raise BrowserIncorrectPassword(errors)
+        if errors:
+            raise BrowserIncorrectPassword(errors)
 
-            return response
+        return response
   
     @need_login
     def get_accounts_list(self):
