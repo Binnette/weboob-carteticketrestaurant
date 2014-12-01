@@ -31,11 +31,12 @@ class CarteTicketRestaurantBrowser(LoginBrowser):
     transaction = URL('/Card/Transaction', Transaction)
 
     def do_login(self):
+        self.login.stay_or_go()
         response = self.login.open(data={'email': self.username, 'password': self.password})
-        errors = response.get_errors()
-
-        if errors:
-            raise BrowserIncorrectPassword(errors)
+        if self.login.is_here():
+            errors = response.get_errors()
+            if errors:
+                raise BrowserIncorrectPassword(errors)
 
         return response
   
@@ -43,3 +44,8 @@ class CarteTicketRestaurantBrowser(LoginBrowser):
     def get_accounts_list(self):
         self.home.stay_or_go()
         return self.page.get_accounts()
+
+    @need_login
+    def iter_history(self, account):
+        self.transaction.stay_or_go()
+        return self.page.get_history()

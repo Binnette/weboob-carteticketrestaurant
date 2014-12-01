@@ -17,7 +17,6 @@
 # You should have received a copy of the GNU Affero General Public License
 # along with weboob. If not, see <http://www.gnu.org/licenses/>.
 
-from weboob.tools.log import getLogger
 from weboob.capabilities.base import find_object
 from weboob.capabilities.bank import CapBank, AccountNotFound
 from weboob.tools.backend import Module, BackendConfig
@@ -51,15 +50,4 @@ class CarteTicketRestaurantModule(Module, CapBank):
         return find_object(self.browser.get_accounts_list(), id=_id, error=AccountNotFound)
 
     def iter_history(self, account):
-        """
-        Iter history of transactions on a specific account.
-
-        :param account: account to get history
-        :type account: :class:`Account`
-        :rtype: iter[:class:`Transaction`]
-        :raises: :class:`AccountNotFound`
-        """
-        #TODO
-        log = getLogger("Binnette")
-        log.debug("iter_history")
-        raise NotImplementedError()
+        return self.browser.iter_history(account)
