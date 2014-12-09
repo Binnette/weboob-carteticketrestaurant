@@ -16,7 +16,8 @@
 #
 # You should have received a copy of the GNU Affero General Public License
 # along with weboob. If not, see <http://www.gnu.org/licenses/>.
-
+import pdb
+import itertools
 from weboob.tools.log import getLogger
 from weboob.browser import LoginBrowser, need_login, URL
 from weboob.exceptions import BrowserIncorrectPassword
@@ -48,4 +49,7 @@ class CarteTicketRestaurantBrowser(LoginBrowser):
     @need_login
     def iter_history(self, account):
         self.transaction.stay_or_go()
-        return self.page.get_history()
+        debits = self.page.get_debits()
+        chargements = self.page.get_chargements()
+        li = list(itertools.chain(debits, chargements))
+        return sorted(li, key=lambda transaction: transaction.date, reverse=True)

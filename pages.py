@@ -17,6 +17,7 @@
 # You should have received a copy of the GNU Affero General Public License
 # along with weboob. If not, see <http://www.gnu.org/licenses/>.
 
+import pdb
 from weboob.tools.log import getLogger
 from weboob.browser.filters.standard import CleanText, CleanDecimal, Date, DateGuesser
 from weboob.browser.elements import ListElement, ItemElement, method
@@ -37,19 +38,23 @@ class Home(HTMLPage):
         yield account
 
 class Transaction(HTMLPage):
-    @pagination
+    
     @method
-    class get_history(ListElement):
+    class get_debits(ListElement):
         item_xpath = '//div[@id="tab-debit"]//table[@class="table table-transaction"]/tbody/tr'
-        
-        def next_page(self):
-            log = getLogger("Binnette")
-            form = self.page.get_form('//form[@id="form0"]', submit='//input[@class="submit"]')
-            response = form.request
-            log.debug(form)
-            log.debug(response)
-            #return response
-            return
+
+        class item(ItemElement):
+            klass = Transaction
+            condition = lambda self: len(self.el.xpath('./td')) >= 4
+
+            obj_date = DateGuesser(CleanText('./td[1]/span'), LinearDateGuesser())
+            obj_label = CleanText('./td[2]/h3')
+            obj_raw = CleanText('./td[3]/span')
+            obj_amount = CleanDecimal('./td[4]/span', replace_dots=True)
+
+    @method
+    class get_chargements(ListElement):
+        item_xpath = '//div[@id="tab-chargement"]//table[@class="table table-transaction"]/tbody/tr'
 
         class item(ItemElement):
             klass = Transaction
