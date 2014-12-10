@@ -51,6 +51,10 @@ class Transaction(HTMLPage):
             obj_label = CleanText('./td[2]/h3')
             obj_raw = CleanText('./td[3]/span')
             obj_amount = CleanDecimal('./td[4]/span', replace_dots=True)
+            obj_type = Account.TYPE_CHECKING
+            obj_rdate = None
+            obj_vdate = None
+            obj_category = ""
 
     @method
     class get_chargements(ListElement):
@@ -64,3 +68,7 @@ class Transaction(HTMLPage):
             obj_label = CleanText('./td[2]/h3')
             obj_raw = CleanText('./td[3]/span')
             obj_amount = CleanDecimal('./td[4]/span', replace_dots=True)
+            obj_type = Account.TYPE_DEPOSIT
+            obj_rdate = None
+            obj_vdate = None
+            obj_category = ""
