@@ -16,9 +16,8 @@
 #
 # You should have received a copy of the GNU Affero General Public License
 # along with weboob. If not, see <http://www.gnu.org/licenses/>.
-import pdb
+
 import itertools
-from weboob.tools.log import getLogger
 from weboob.browser import LoginBrowser, need_login, URL
 from weboob.exceptions import BrowserIncorrectPassword
 from .pages import Login, Home, Transaction
@@ -26,10 +25,10 @@ from .pages import Login, Home, Transaction
 __all__ = ['CarteTicketRestaurantBrowser']
 
 class CarteTicketRestaurantBrowser(LoginBrowser):
-    BASEURL     = 'https://www.myedenred.fr'
-    login       = URL('/Account/LogOn', Login)
-    home        = URL('/Home', Home)
-    transaction = URL('/Card/Transaction', Transaction)
+    BASEURL        = 'https://www.myedenred.fr'
+    login          = URL('/Account/LogOn', Login)
+    home           = URL('/Home', Home)
+    transaction    = URL('/Card/Transaction', Transaction)
 
     def do_login(self):
         self.login.stay_or_go()
@@ -49,7 +48,16 @@ class CarteTicketRestaurantBrowser(LoginBrowser):
     @need_login
     def iter_history(self, account):
         self.transaction.stay_or_go()
-        debits = self.page.get_debits()
         chargements = self.page.get_chargements()
+        form = self.page.get_form_next_transactions()
+        have_next = True;
+        while have_next:
+            form.submit()
+            form['PageNum'] = str(int(form['PageNum']) + 1)
+            have_next = self.page.have_button_next()
+        
+        debits = self.page.get_debits()
         li = list(itertools.chain(debits, chargements))
-        return sorted(li, key=lambda transaction: transaction.date, reverse=True)
+        li = sorted(li, key=lambda transaction: transaction.date, reverse=True)
+
+        return li

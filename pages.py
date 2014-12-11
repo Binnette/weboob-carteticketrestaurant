@@ -17,10 +17,8 @@
 # You should have received a copy of the GNU Affero General Public License
 # along with weboob. If not, see <http://www.gnu.org/licenses/>.
 
-import pdb
-from weboob.tools.log import getLogger
-from weboob.browser.filters.standard import CleanText, CleanDecimal, Date, DateGuesser
 from weboob.browser.elements import ListElement, ItemElement, method
+from weboob.browser.filters.standard import CleanText, CleanDecimal, Date, DateGuesser
 from weboob.browser.pages import HTMLPage, pagination
 from weboob.capabilities.bank import Account, Transaction
 from weboob.tools.date import LinearDateGuesser
@@ -38,23 +36,12 @@ class Home(HTMLPage):
         yield account
 
 class Transaction(HTMLPage):
-    
-    @method
-    class get_debits(ListElement):
-        item_xpath = '//div[@id="tab-debit"]//table[@class="table table-transaction"]/tbody/tr'
+    def get_form_next_transactions(self):
+        return self.get_form('//div[@id="tab-debit"]//form', submit='//div[@id="updateDebit"]/div/input')
 
-        class item(ItemElement):
-            klass = Transaction
-            condition = lambda self: len(self.el.xpath('./td')) >= 4
-
-            obj_date = DateGuesser(CleanText('./td[1]/span'), LinearDateGuesser())
-            obj_label = CleanText('./td[2]/h3')
-            obj_raw = CleanText('./td[3]/span')
-            obj_amount = CleanDecimal('./td[4]/span', replace_dots=True)
-            obj_type = Account.TYPE_CHECKING
-            obj_rdate = None
-            obj_vdate = None
-            obj_category = ""
+    def have_button_next(self):
+        button_next = self.doc.xpath('//div/input[@type="submit"]')
+        return len(button_next) > 0
 
     @method
     class get_chargements(ListElement):
@@ -69,6 +56,23 @@ class Transaction(HTMLPage):
             obj_raw = CleanText('./td[3]/span')
             obj_amount = CleanDecimal('./td[4]/span', replace_dots=True)
             obj_type = Account.TYPE_DEPOSIT
+            obj_rdate = None
+            obj_vdate = None
+            obj_category = ""
+
+    @method
+    class get_debits(ListElement):
+        item_xpath = '//table[@class="table table-transaction"]/tbody/tr'
+
+        class item(ItemElement):
+            klass = Transaction
+            condition = lambda self: len(self.el.xpath('./td')) >= 4
+
+            obj_date = DateGuesser(CleanText('./td[1]/span'), LinearDateGuesser())
+            obj_label = CleanText('./td[2]/h3')
+            obj_raw = CleanText('./td[3]/span')
+            obj_amount = CleanDecimal('./td[4]/span', replace_dots=True)
+            obj_type = Account.TYPE_CHECKING
             obj_rdate = None
             obj_vdate = None
             obj_category = ""
